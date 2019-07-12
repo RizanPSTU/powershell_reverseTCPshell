@@ -23,7 +23,7 @@ sudo python3 -m http.server 80
 ```
 
 ### Stage 1
-To run stage 1, follow the instructions on line 1 of "loader.txt". This will download and run "payload.ps1" from the server. A powershell window will be opened, but this should disappear almost immeadiately. The script in "payload.ps1" now creates a file "pspayload.ps1" in the user's home directory and a file "runner.bat" in the user's startup directory. Both of these are hidden. Subsequently, "runner.bat" is executed, launching stage 2.
+To run stage 1, follow the instructions on line 1 of "loader.txt". This will download and run "payload.ps1" from the server. A powershell window will be opened, but this should disappear almost immeadiately. The script in "payload.ps1" now creates a file "pspayload.ps1" in the user's home directory and a file "runner.bat" in the user's startup directory. Both of these are hidden. Subsequently, "psrunner.bat" is executed, launching stage 2.
 
 ### Stage 2
 Stage 2 is run automatically, and the victim is now, every 10 seconds trying to establish a TCP connection to the listener machine. One way to receive this connection is with netcat:
